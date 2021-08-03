@@ -1,57 +1,58 @@
-import sqlalchemy.orm as _orm
-import database as _database
-import models as _models
-import schemas as _schemas
-import passlib.hash as _hash
-import fastapi as _fastapi
-import fastapi.security as _security
-import jwt as _jwt
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+from passlib.hash import bcrypt
+import database
+import models
+import schemas
+import jwt
 
-oauth2schema = _security.OAuth2PasswordBearer(tokenUrl="/api/token")
+oauth2schema = OAuth2PasswordBearer(tokenUrl="/api/token")
 
-JWT_SECRET = "secret"
+JWT_SECRET = "2f977d4a840e166bac6e2bb92957cb52b2e315aa969352520c7f318fa9446696"
+ALGORITHM = ["HS256"]
 
 def create_database():
-    return _database.Base.metadata.create_all(bind=_database.engine)
+    return database.Base.metadata.create_all(bind=database.engine)
 
 def get_db():
-    db = _database.SessionLocal()
+    db = database.SessionLocal()
     try:
         yield db
     finally:
        db.close() 
 
-async def get_user_by_username(username: str, db: _orm.Session):
-    return db.query(_models.User).filter(_models.User.username == username).first()
+async def get_user_by_email(email: str, db: Session):
+    return db.query(models.User).filter(models.User.email == email).first()
 
-async def create_user(user: _schemas.UserCreate, db: _orm.Session):
-    user_obj = _models.User(username=user.username, email=user.email, hashed_password=_hash.bcrypt.hash(user.hashed_password))
+async def create_user(user: schemas.UserCreate, db: Session):
+    user_obj = models.User(username=user.username, email=user.email, hashed_password=bcrypt.hash(user.hashed_password))
     db.add(user_obj)
     db.commit()
     db.refresh(user_obj)
     return user_obj
 
-async def authenticate_user(username: str, password: str, db: _orm.Session):
-    user = await get_user_by_username(username, db)
+async def authenticate_user(email: str, password: str, db: Session):
+    user = await get_user_by_email(email, db)
 
-    if not user:
-        return False
-
-    if not user.verify_password(password):
+    if not user or not user.verify_password(password):
         return False
 
     return user
 
-async def create_token(user: _models.User):
-    user_obj = _schemas.User.from_orm(user)
-    token = _jwt.encode(user_obj.dict(), JWT_SECRET)
+async def create_token(user: models.User):
+    user_obj = schemas.User.from_orm(user)
+    token = jwt.encode(user_obj.dict(), JWT_SECRET)
     return dict(access_token=token, token_type="bearer")
 
-async def get_current_user(db: _orm.Session = _fastapi.Depends(get_db), token: str = _fastapi.Depends(oauth2schema)):
+async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2schema)):
     try:
-        payload = _jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        user = db.query(_models.User).get(payload['id'])
+        payload = jwt.decode(token, JWT_SECRET, ALGORITHM)
+        user = db.query(models.User).get(payload['id'])
     except:
-        raise _fastapi.HTTPException(status_code=401, detail="Invald credentials")
+        raise HTTPException(status_code=401, detail="Invald credentials")
 
-    return _schemas.User.from_orm(user)
+    return schemas.User.from_orm(user)
+
+async def get_cards(db: Session, token: str = Depends(oauth2schema)):        
+    return db.query(models.Card).all()

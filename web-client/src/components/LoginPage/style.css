@@ -1,0 +1,39 @@
+body {
+    background-color: #F9A825;
+}
+
+.logo {
+    margin-top: 15%;
+    width: 400px;
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+  
+.form-padding {
+    padding-top: 10px;
+    width: 400px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 50px;
+    border: 0px;
+    margin-bottom: 10px;
+}
+
+.continueButton {
+    margin-bottom: 10px;
+    border-radius: 50px;
+    border: 0px;
+    font-size: 16px;
+    color: white;
+}
+
+.continueButton:hover {
+    background-color: white;
+    color: #F9A825; 
+}
+

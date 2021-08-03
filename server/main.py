@@ -1,30 +1,56 @@
-import fastapi as _fastapi
-import fastapi.security as _security
-import sqlalchemy.orm as _orm
-import services as _services
-import schemas as _schemas
+import fastapi
+import sqlalchemy.orm as orm
+import services
+import schemas
 
-app = _fastapi.FastAPI()
+from typing import List
+from fastapi.middleware.cors import CORSMiddleware
+
+app = fastapi.FastAPI()
+
+origins = [
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=origins,
+    allow_credentials=True, 
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 @app.post("/api/users")
-async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)):
-    db_user = await _services.get_user_by_username(user.username, db)
+async def create_user(user: schemas.UserCreate, db: orm.Session = fastapi.Depends(services.get_db)):
+    db_user = await services.get_user_by_email(user.email, db)
 
     if db_user:
-        raise _fastapi.HTTPException(status_code=400, detail="Username already in use")
+        raise fastapi.HTTPException(status_code=400, detail="Username already in use")
 
-    return await _services.create_user(user, db)
+    return await services.create_user(user, db)
+
+@app.post("/api/users/available")
+async def create_user(user: schemas.UserVerify, db: orm.Session = fastapi.Depends(services.get_db)):
+    db_user = await services.get_user_by_email(user.email, db)
+
+    if db_user:
+        raise fastapi.HTTPException(status_code=400, detail="Username already in use")
+
+    return fastapi.responses.JSONResponse(status_code=400,content={"detail": "Username available"})
 
 @app.post("/api/token")
-async def generate_token(form_data: _security.OAuth2PasswordRequestForm = _fastapi.Depends(), db: _orm.Session = _fastapi.Depends(_services.get_db)):
-    user = await _services.authenticate_user(form_data.username, form_data.password, db)
+async def generate_token(form_data: fastapi.security.OAuth2PasswordRequestForm = fastapi.Depends(), db: orm.Session = fastapi.Depends(services.get_db)):
+    user = await services.authenticate_user(form_data.username, form_data.password, db)
 
     if not user:
-        raise _fastapi.HTTPException(status_code=401, detail="Invalid credentials")
+        raise fastapi.HTTPException(status_code=401, detail="Invalid credentials")
 
-    return await _services.create_token(user)
+    return await services.create_token(user)
 
-@app.get("/api/users/me", response_model = _schemas.User)
-async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_user)):
+@app.get("/api/users/me", response_model = schemas.User)
+async def get_user(user: schemas.User = fastapi.Depends(services.get_current_user)):
     return user
-    
+
+@app.get("/api/cards/all", response_model = List[schemas.Card])
+async def get_cards(db: orm.Session = fastapi.Depends(services.get_db), user: schemas.User = fastapi.Depends(services.get_current_user)):
+    return await services.get_cards(db)
