@@ -2,19 +2,18 @@ from pydantic import BaseModel
 
 class _UserBase(BaseModel):
     email: str
+    username: str
 
 class UserVerify(_UserBase):
     pass
 
 class UserCreate(_UserBase):
-    username: str
     hashed_password: str
     
     class Config:
         orm_mode = True
 
 class User(_UserBase):
-    username: str
     id: int
 
     class Config:

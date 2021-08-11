@@ -1,5 +1,7 @@
+from sqlalchemy.sql.functions import user
 from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import Response
+from utils import OAuth2PasswordBearerWithCookie
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
 import database
@@ -7,7 +9,7 @@ import models
 import schemas
 import jwt
 
-oauth2schema = OAuth2PasswordBearer(tokenUrl="/api/token")
+oauth2schema = OAuth2PasswordBearerWithCookie(tokenUrl="/api/token")
 
 JWT_SECRET = "2f977d4a840e166bac6e2bb92957cb52b2e315aa969352520c7f318fa9446696"
 ALGORITHM = ["HS256"]
@@ -24,6 +26,9 @@ def get_db():
 
 async def get_user_by_email(email: str, db: Session):
     return db.query(models.User).filter(models.User.email == email).first()
+
+async def get_user_by_username(username: str, db: Session):
+    return db.query(models.User).filter(models.User.username == username).first()
 
 async def create_user(user: schemas.UserCreate, db: Session):
     user_obj = models.User(username=user.username, email=user.email, hashed_password=bcrypt.hash(user.hashed_password))
