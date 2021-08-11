@@ -1,4 +1,7 @@
 /venv
-/pycache
-/.database.db
+.database.db
 /node_modules
+
+# Aphrx
+/__pycache__
+.database.db
