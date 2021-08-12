@@ -56,8 +56,3 @@ async def get_user(user: schemas.User = fastapi.Depends(services.get_current_use
 @app.get("/api/users/logout")
 async def logout_user(response: Response):
     response.delete_cookie(key="access_token")
-
-
-@app.get("/api/cards/all", response_model = List[schemas.Card])
-async def get_cards(db: orm.Session = fastapi.Depends(services.get_db), user: schemas.User = fastapi.Depends(services.get_current_user)):
-    return await services.get_cards(db)

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import NavBar from "../../components/NavBar";
+import NavigationBar from "../../components/NavigationBar";
 import './style.css';
 
 export default function HomePage() {
 
     return (
         <div id="homePage">
-            <NavBar />
+            <NavigationBar />
         </div>
     );
 }

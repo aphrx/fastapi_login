@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import logo from './../../logo.png';
-import './style.css'
-import { Nav, Container, Navbar } from "react-bootstrap";
+import { NavLink, NavBar, NavBarBrand, NavBarToggle, NavBarCollapse, NavBarImage } from "./style.js";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useHistory } from "react-router-dom";
+import { Nav, Container } from "react-bootstrap";
 
 let url = 'http://localhost:8000'
 
-export default function NavBar(){
+export default function NavigationBar(){
 
     useEffect(() => {validateUser()}, [])
     
@@ -48,20 +48,18 @@ export default function NavBar(){
 
 
     return (<div>
-            <Navbar id="navbar" collapseOnSelect expand="lg">
+            <NavBar collapseOnSelect expand="lg">
                 <Container>
-                <Navbar.Brand href="/"><img id="logo" src={logo}/></Navbar.Brand>
-                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-                <Navbar.Collapse id="responsive-navbar-nav">
+                <NavBarBrand href="/"><NavBarImage id="logo" src={logo}/></NavBarBrand>
+                <NavBarToggle aria-controls="responsive-navbar-nav" />
+                <NavBarCollapse id="responsive-navbar-nav">
                     <Nav className="me-auto">
                     </Nav>
                     <Nav>
-                    <Nav.Link class="navLinks" href="/join">JOIN GAME</Nav.Link>
-                    <Nav.Link class="navLinks" href="/create">CREATE GAME</Nav.Link>
-                    <Nav.Link class="navLinks" onClick={logout}>LOG OUT</Nav.Link>
+                        <NavLink class="navLinks" onClick={logout}>LOG OUT</NavLink>
                     </Nav>
-                </Navbar.Collapse>
+                </NavBarCollapse>
                 </Container>
-                </Navbar>
+                </NavBar>
         </div>)
 }; 

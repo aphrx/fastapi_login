@@ -58,6 +58,3 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
         raise HTTPException(status_code=401, detail="Invald credentials")
 
     return schemas.User.from_orm(user)
-
-async def get_cards(db: Session, token: str = Depends(oauth2schema)):        
-    return db.query(models.Card).all()
